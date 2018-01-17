@@ -24,9 +24,13 @@ def read_data(data_path):
     with open(imgnames_path_val) as f:
         for line in f:
             val_files.append(line.strip()+'.jpg')
-    with open(imgnames_path_test) as f:
-        for line in f:
-            test_files.append(line.strip()+'.jpg')
+    try:
+        with open(imgnames_path_test) as f:
+            for line in f:
+                test_files.append(line.strip()+'.jpg')
+    except:
+        pass
+
 
     #now we go trhough all annotation files and get the needed info from there
     annot_files=[os.path.join(annot_path,n) for n in os.listdir(annot_path)]
