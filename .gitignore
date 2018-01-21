@@ -1,5 +1,8 @@
 .idea
+/.vscode
 /VOCdevkit
 
 frcnn/__pycache__
 __pycache__
+VOCtrainval_11-May-2012.tar
+vgg16_weights_tf_dim_ordering_tf_kernels.h5

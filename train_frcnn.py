@@ -28,7 +28,7 @@ parser.add_option("-p", "--path", dest="train_path", help="Path to training data
 parser.add_option("-n", "--num_rois", type="int", dest="num_rois", help="Number of RoIs to process at once.",
                   default=32)
 parser.add_option("--network", dest="network", help="Base network to use. Supports vgg or resnet50.",
-                  default='resnet50')
+                  default='vgg')
 parser.add_option("--hf", dest="horizontal_flips", help="Augment with horizontal flips in training. (Default=false).",
                   action="store_true", default=False)
 parser.add_option("--vf", dest="vertical_flips", help="Augment with vertical flips in training. (Default=false).",
@@ -64,9 +64,8 @@ if options.network == 'vgg':
     C.network = 'vgg'
     from frcnn import vgg as nn
 elif options.network == 'resnet50':
-    from frcnn import resnet as nn
-
     C.network = 'resnet50'
+    from frcnn import resnet as nn
 else:
     print('Not a valid model')
     raise ValueError
@@ -78,7 +77,8 @@ else:
     # set the path to weights based on backend and model
     C.base_net_weights = nn.get_weight_path()
 
-all_imgs, classes_count, class_mapping = read_data(options.train_path)
+train_classes = ['dog', 'cat', 'car']
+all_imgs, classes_count, class_mapping = read_data(options.train_path, train_classes)
 
 if 'bg' not in classes_count:
     classes_count['bg'] = 0
@@ -140,7 +140,7 @@ try:
     model_rpn.load_weights(C.base_net_weights, by_name=True)
     model_classifier.load_weights(C.base_net_weights, by_name=True)
 except:
-    print('Could not load pretrained model weights. Weights can be found in the keras application folder \
+    print('Could not load pre-trained model weights. Weights can be found in the keras application folder \
 		https://github.com/fchollet/keras/tree/master/keras/applications')
 
 optimizer = Adam(lr=1e-5)
@@ -189,7 +189,7 @@ for epoch_num in range(num_epochs):
 
             P_rpn = model_rpn.predict_on_batch(X)
 
-            R = roi_helpers.rpn_to_roi(P_rpn[0], P_rpn[1], C, K.image_dim_ordering(), use_regr=True, overlap_thresh=0.7,
+            R = roi_helpers.rpn_to_roi(P_rpn[0], P_rpn[1], C, use_regr=True, overlap_thresh=0.7,
                                        max_boxes=300)
             # note: calc_iou converts from (x1,y1,x2,y2) to (x,y,w,h) format
             X2, Y1, Y2, IouS = roi_helpers.calc_iou(R, img_data, C, class_mapping)
