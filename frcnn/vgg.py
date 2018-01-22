@@ -8,7 +8,7 @@ This code is largely copied from https://github.com/yhenon/keras-frcnn but we ha
 - [1] [Very Deep Convolutional Networks for Large-Scale Image Recognition](https://arxiv.org/abs/1409.1556)
 """
 from keras.layers import Flatten, Dense, Input, Conv2D, MaxPooling2D, Dropout
-from keras.layers import GlobalAveragePooling2D, GlobalMaxPooling2D, TimeDistributed
+from keras.layers import TimeDistributed
 from keras import backend as K
 from frcnn.RoiPoolingConv import RoiPoolingConv
 
