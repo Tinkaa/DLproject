@@ -36,6 +36,7 @@ def rpn_focal_loss_cls(num_anchors, alpha=0.25, gamma=2.0):
         alpha_factor = K.ones_like(y_true_2) * alpha
         alpha_factor = tf.where(K.equal(y_true_2, 1), alpha_factor, 1 - alpha_factor)
         focal_weight = tf.where(K.equal(y_true_2, 1), 1 - y_pred, y_pred)
+        focal_weight = alpha_factor * focal_weight ** gamma
 
         # Compute focal loss
         loss = focal_weight * K.binary_crossentropy(y_true_2, y_pred)
