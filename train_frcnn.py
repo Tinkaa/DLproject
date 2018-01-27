@@ -104,17 +104,13 @@ random.shuffle(all_imgs)
 num_imgs = len(all_imgs)
 
 train_imgs = [s for s in all_imgs if s['Imageset'] == 'train']
-val_imgs = [s for s in all_imgs if s['Imageset'] == 'val']
 test_imgs = [s for s in all_imgs if s['Imageset'] == 'test']
 
 print('Num train samples {}'.format(len(train_imgs)))
-print('Num val samples {}'.format(len(val_imgs)))
 print('Num test samples {}'.format(len(test_imgs)))
 
 data_gen_train = data_generators.get_anchor_gt(train_imgs, classes_count, C, nn.get_img_output_length, mode='train')
-data_gen_val = data_generators.get_anchor_gt(val_imgs, classes_count, C, nn.get_img_output_length, mode='val')
 data_gen_test = data_generators.get_anchor_gt(test_imgs, classes_count, C, nn.get_img_output_length, mode='test')
-
 
 input_shape_img = (None, None, 3)
 img_input = Input(shape=input_shape_img)
@@ -139,9 +135,12 @@ try:
     print('loading weights from {}'.format(C.base_net_weights))
     model_rpn.load_weights(C.base_net_weights, by_name=True)
     model_classifier.load_weights(C.base_net_weights, by_name=True)
+except IOError as e:
+    print("I/O error({0}): {1}".format(e.errno, e.strerror))
+except ValueError:
+    print("Could not load model weights due to ValueError.")
 except:
-    print('Could not load pre-trained model weights. Weights can be found in the keras application folder \
-		https://github.com/fchollet/keras/tree/master/keras/applications')
+    print('Could not load pre-trained model weights. Weights can be found in the keras application folder https://github.com/fchollet/keras/tree/master/keras/applications')
 
 optimizer = Adam(lr=1e-5)
 optimizer_classifier = Adam(lr=1e-5)
