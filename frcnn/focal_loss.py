@@ -45,7 +45,7 @@ def rpn_focal_loss_cls(num_anchors, alpha=0.25, gamma=2.0):
         anchor_states = K.max(y_true_1, axis=2)
         indices = tf.where(K.not_equal(anchor_states, -1))
 
-        loss = tf.gather(loss, indices)
+        loss = tf.gather_nd(loss, indices)
 
         return K.sum(loss) / K.cast(K.shape(y_true_1)[0], K.floatx())
     
