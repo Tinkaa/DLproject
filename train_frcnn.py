@@ -14,6 +14,7 @@ from keras.models import Model
 # noinspection PyUnboundLocalVariable
 from frcnn import config, data_generators
 from frcnn import losses as losses
+from frcnn import focal_loss as focal_loss
 import frcnn.roi_helpers as roi_helpers
 from keras.utils import generic_utils
 from get_data import read_data
@@ -45,6 +46,8 @@ parser.add_option("--output_weight_path", dest="output_weight_path", help="Outpu
 parser.add_option("--input_weight_path", dest="input_weight_path",
                   help="Input path for weights. If not specified, will try to load default weights provided by keras.")
 
+parser.add_option("--loss_func", dest="loss_func", help="Specify loss function to use. (Default = frcnn)",
+                  default='frcnn')
 (options, args) = parser.parse_args()
 
 if not options.train_path:  # if filename is not given
@@ -144,7 +147,16 @@ except:
 
 optimizer = Adam(lr=1e-5)
 optimizer_classifier = Adam(lr=1e-5)
-model_rpn.compile(optimizer=optimizer, loss=[losses.rpn_loss_cls(num_anchors), losses.rpn_loss_regr(num_anchors)])
+
+if options.loss_func == 'frcnn':
+    model_rpn.compile(optimizer=optimizer, loss=[losses.rpn_loss_cls(num_anchors), losses.rpn_loss_regr(num_anchors)])
+elif options.loss_func == 'focal_loss':
+    print('Using focal loss')
+    model_rpn.compile(optimizer=optimizer, loss=[focal_loss.rpn_focal_loss_cls(num_anchors), focal_loss.rpn_smooth_l1_regr(num_anchors)])
+else:
+    print('Loss function is invalid.')
+    raise ValueError
+
 model_classifier.compile(optimizer=optimizer_classifier,
                          loss=[losses.class_loss_cls, losses.class_loss_regr(len(classes_count) - 1)],
                          metrics={'dense_class_{}'.format(len(classes_count)): 'accuracy'})
