@@ -5,10 +5,17 @@ from keras import backend as K
 # smooth l1
 def rpn_smooth_l1_regr(num_anchors, sigma=3.0):
     sigma_2 = sigma ** 2
-    
+    epsilon = 1e-4
+
     def rpn_loss_regr_fixed_num(y_true, y_pred):
-        pass
-    
+        x = y_true[:, :, :, 4 * num_anchors:] - y_pred
+        x_abs = K.abs(x)
+        x_bool = K.cast(K.less_equal(x_abs, 1.0), tf.float32)
+
+        return K.sum(
+            y_true[:, :, :, :4 * num_anchors] * (x_bool * (0.5 * sigma_2 * x * x) + (1 - x_bool) * (x_abs - 0.5 / sigma_2))) / K.sum(
+            epsilon + y_true[:, :, :, :4 * num_anchors])
+
     return rpn_loss_regr_fixed_num
 
 
