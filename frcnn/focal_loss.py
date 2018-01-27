@@ -26,7 +26,7 @@ def rpn_focal_loss_cls(num_anchors, alpha=0.25, gamma=2.0):
         y_true_2 = y_true[:, :, :, num_anchors:]
 
         # Compute divisor
-        divisor = tf.where(K.less_equal(y_true_1, 0), K.zeros_like(y_true_1), y_true)
+        divisor = tf.where(K.less_equal(y_true_1, 0), K.zeros_like(y_true_1), y_true_1)
         divisor = K.max(divisor, axis=2, keepdims=True)
         divisor = K.cast(divisor, K.floatx())
         divisor = K.sum(divisor, axis=1, keepdims=True)
