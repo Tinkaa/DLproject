@@ -1,6 +1,7 @@
 .idea
 /.vscode
 /VOCdevkit
+/**/.DS_Store
 
 frcnn/__pycache__
 __pycache__
