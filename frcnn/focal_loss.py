@@ -46,6 +46,6 @@ def rpn_focal_loss_cls(num_anchors, alpha=0.25, gamma=2.0):
 
         loss = tf.gather(loss, indices)
 
-        return K.sum(loss) / K.cast(K.reshape(y_true_1)[0], K.floatx())
+        return K.sum(loss) / K.cast(K.shape(y_true_1)[0], K.floatx())
     
     return rpn_loss_cls_fixed_num
