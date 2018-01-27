@@ -2,10 +2,13 @@ import tensorflow as tf
 from keras import backend as K
 
 
+epsilon = 1e-4
+
+
 # smooth l1
 def rpn_smooth_l1_regr(num_anchors, sigma=3.0):
     sigma_2 = sigma ** 2
-    epsilon = 1e-4
+    
 
     def rpn_loss_regr_fixed_num(y_true, y_pred):
         x = y_true[:, :, :, 4 * num_anchors:] - y_pred
@@ -25,13 +28,6 @@ def rpn_focal_loss_cls(num_anchors, alpha=0.25, gamma=2.0):
         y_true_1 = y_true[:, :, :, :num_anchors]
         y_true_2 = y_true[:, :, :, num_anchors:]
 
-        # Compute divisor
-        divisor = tf.where(K.less_equal(y_true_1, 0), K.zeros_like(y_true_1), y_true_1)
-        divisor = K.max(divisor, axis=2, keepdims=True)
-        divisor = K.cast(divisor, K.floatx())
-        divisor = K.sum(divisor, axis=1, keepdims=True)
-        divisor = K.maximum(1.0, divisor)
-
         # Compute focal weight
         alpha_factor = K.ones_like(y_true_2) * alpha
         alpha_factor = tf.where(K.equal(y_true_2, 1), alpha_factor, 1 - alpha_factor)
@@ -40,13 +36,8 @@ def rpn_focal_loss_cls(num_anchors, alpha=0.25, gamma=2.0):
 
         # Compute focal loss
         loss = focal_weight * K.binary_crossentropy(y_true_2, y_pred)
-        loss = loss / divisor
+        loss = y_true_1 * loss
 
-        anchor_states = K.max(y_true_1, axis=2)
-        indices = tf.where(K.not_equal(anchor_states, -1))
-
-        loss = tf.gather_nd(loss, indices)
-
-        return K.sum(loss) / K.cast(K.shape(y_true_1)[0], K.floatx())
+        return K.sum(loss) / K.sum(epsilon + y_true_1)
     
     return rpn_loss_cls_fixed_num
