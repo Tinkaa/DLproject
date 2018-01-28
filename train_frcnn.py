@@ -94,9 +94,6 @@ def init_params(options):
 
     C.class_mapping = class_mapping
 
-    # TODO: remove?
-    # inv_map = {v: k for k, v in class_mapping.items()}
-
     print('Training images per class:')
     pprint.pprint(classes_count)
     print('Num classes (including bg) = {}'.format(len(classes_count)))
@@ -109,9 +106,6 @@ def init_params(options):
             config_output_filename))
 
     random.shuffle(all_imgs)
-
-    # TODO: remove?
-    # num_imgs = len(all_imgs)
 
     # construct train and test sets
     train_imgs = [s for s in all_imgs if s['Imageset'] == 'train']
@@ -185,11 +179,7 @@ def train(data_gen_train, model_rpn, model_classifier, model_all, num_epochs, ep
 
     best_loss = np.Inf
 
-    # TODO: remove?
-    # class_mapping_inv = {v: k for k, v in C.class_mapping.items()}
     print('Starting training')
-
-    # vis = True
 
     for epoch_num in range(num_epochs):
 
