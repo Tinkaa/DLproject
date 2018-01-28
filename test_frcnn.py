@@ -100,6 +100,7 @@ if 'bg' not in class_mapping:
 	class_mapping['bg'] = len(class_mapping)
 
 class_mapping = {v: k for k, v in class_mapping.items()}
+
 print(class_mapping)
 class_to_color = {class_mapping[v]: np.random.randint(0, 255, 3) for v in class_mapping}
 C.num_rois = int(options.num_rois)
@@ -226,6 +227,9 @@ for idx, img_name in enumerate(sorted(os.listdir(img_path))):
 		bbox = np.array(bboxes[key])
 
 		new_boxes, new_probs = roi_helpers.non_max_suppression_fast(bbox, np.array(probs[key]), overlap_thresh=0.5)
+		print('all predictions',new_probs)
+		print('number of detections',len(new_boxes))
+
 		for jk in range(new_boxes.shape[0]):
 			(x1, y1, x2, y2) = new_boxes[jk,:]
 
