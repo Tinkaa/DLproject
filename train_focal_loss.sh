@@ -8,4 +8,4 @@
 module load anaconda3
 source activate /scratch/work/phama1/tensorflow
 
-srun --gres=gpu:1 python train_frcnn.py -p VOCdevkit --input_weight_path model_frcnn_3_classes.hdf5
+srun --gres=gpu:1 python train_frcnn.py -p VOCdevkit --config_filename config_focal_loss.pickle --output_weight_path ./model_focal_loss.hdf5 --num_epochs 120
