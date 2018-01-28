@@ -1,55 +1,76 @@
+"""
+Utilities to transform images and labels into
+quantifiable data for training (and testing)
+"""
 from __future__ import absolute_import
-import numpy as np
-import cv2
 import random
-from . import data_augment
 import threading
 import itertools
+import numpy as np
+import cv2
+from . import data_augment
 
 
-def union(au, bu, area_intersection):
-    area_a = (au[2] - au[0]) * (au[3] - au[1])
-    area_b = (bu[2] - bu[0]) * (bu[3] - bu[1])
+def union(a_u, b_u, area_intersection):
+    """
+    Calculate the union area of 2 bounding boxes
+    """
+    area_a = (a_u[2] - a_u[0]) * (a_u[3] - a_u[1])
+    area_b = (b_u[2] - b_u[0]) * (b_u[3] - b_u[1])
     area_union = area_a + area_b - area_intersection
     return area_union
 
 
-def intersection(ai, bi):
-    x = max(ai[0], bi[0])
-    y = max(ai[1], bi[1])
-    w = min(ai[2], bi[2]) - x
-    h = min(ai[3], bi[3]) - y
-    if w < 0 or h < 0:
+def intersection(a_i, b_i):
+    """
+    Calculate the intersection area of 2 bounding boxes
+    """
+    _x = max(a_i[0], b_i[0])
+    _y = max(a_i[1], b_i[1])
+    _w = min(a_i[2], b_i[2]) - _x
+    _h = min(a_i[3], b_i[3]) - _y
+    if _w < 0 or _h < 0:
         return 0
-    return w * h
+    return _w * _h
 
 
-def iou(a, b):
-    # a and b should be (x1,y1,x2,y2)
-
-    if a[0] >= a[2] or a[1] >= a[3] or b[0] >= b[2] or b[1] >= b[3]:
+def iou(_a, _b):
+    """
+    Calculate the intersection over union ratio of 2 bounding boxes
+    _a and _b should be (x1,y1,x2,y2)
+    """
+    if _a[0] >= _a[2] or _a[1] >= _a[3] or _b[0] >= _b[2] or _b[1] >= _b[3]:
         return 0.0
 
-    area_i = intersection(a, b)
-    area_u = union(a, b, area_i)
+    area_i = intersection(_a, _b)
+    area_u = union(_a, _b, area_i)
 
     return float(area_i) / float(area_u + 1e-6)
 
 
 def get_new_img_size(width, height, img_min_side=600):
+    """
+    Calculate a preresized image new size, provided the min side length
+    i.e. suppose an image with size (h, w), where h < w,
+    then h will be rescaled to img_min_side, and w will be
+    rescaled in such a way to preserve ratio.
+    """
     if width <= height:
-        f = float(img_min_side) / width
-        resized_height = int(f * height)
+        _f = float(img_min_side) / width
+        resized_height = int(_f * height)
         resized_width = img_min_side
     else:
-        f = float(img_min_side) / height
-        resized_width = int(f * width)
+        _f = float(img_min_side) / height
+        resized_width = int(_f * width)
         resized_height = img_min_side
 
     return resized_width, resized_height
 
 
 class SampleSelector:
+    """
+    Select sample images from specified classes (and their respected requested counts)
+    """
     def __init__(self, class_count):
         # ignore classes that have zero samples
         self.classes = [b for b in class_count.keys() if class_count[b] > 0]
@@ -76,6 +97,10 @@ class SampleSelector:
 
 
 def calc_rpn(C, img_data, width, height, resized_width, resized_height, img_length_calc_function):
+    """
+    Extract the bounding boxes and class information for RPN training
+    Return the resized version when resizing the image to fit the network
+    """
     downscale = float(C.rpn_stride)
     anchor_sizes = C.anchor_box_scales
     anchor_ratios = C.anchor_box_ratios
@@ -110,7 +135,6 @@ def calc_rpn(C, img_data, width, height, resized_width, resized_height, img_leng
         gta[bbox_num, 3] = bbox['y2'] * (resized_height / float(height))
 
     # rpn ground truth
-
     for anchor_size_idx in range(len(anchor_sizes)):
         for anchor_ratio_idx in range(n_anchratios):
             anchor_x = anchor_sizes[anchor_size_idx] * anchor_ratios[anchor_ratio_idx][0]
@@ -197,7 +221,6 @@ def calc_rpn(C, img_data, width, height, resized_width, resized_height, img_leng
                         y_rpn_regr[jy, ix, start:start + 4] = best_regr
 
     # we ensure that every bbox has at least one positive RPN region
-
     for idx in range(num_anchors_for_bbox.shape[0]):
         if num_anchors_for_bbox[idx] == 0:
             # no box with an IOU greater than zero ...
@@ -249,10 +272,10 @@ def calc_rpn(C, img_data, width, height, resized_width, resized_height, img_leng
 
 
 class threadsafe_iter:
-    """Takes an iterator/generator and makes it thread-safe by
+    """
+    Takes an iterator/generator and makes it thread-safe by
     serializing call to the `next` method of given iterator/generator.
     """
-
     def __init__(self, it):
         self.it = it
         self.lock = threading.Lock()
@@ -266,9 +289,9 @@ class threadsafe_iter:
 
 
 def threadsafe_generator(f):
-    """A decorator that takes a generator function and makes it thread-safe.
     """
-
+    A decorator that takes a generator function and makes it thread-safe.
+    """
     def g(*a, **kw):
         return threadsafe_iter(f(*a, **kw))
 
@@ -276,6 +299,9 @@ def threadsafe_generator(f):
 
 
 def get_anchor_gt(all_img_data, class_count, C, img_length_calc_function, mode='train'):
+    """
+    Extract anchor information from images
+    """
     # The following line is not useful with Python 3.5, it is kept for the legacy
     # all_img_data = sorted(all_img_data)
 

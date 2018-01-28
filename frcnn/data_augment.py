@@ -1,3 +1,10 @@
+"""
+Tools to created variational augmented versions from original images.
+Augmentation includes:
+- Flip (horizontally, vertically)
+- Rotation by 90 degree
+- Should also add noise, but not yet implemented
+"""
 import cv2
 import numpy as np
 import copy
