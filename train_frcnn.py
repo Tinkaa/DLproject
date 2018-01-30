@@ -45,9 +45,9 @@ def parse_options():
         parser.error('Error: path to training data must be specified. Pass --path to command line')
 
     C = config.Config()
-    C.use_horizontal_flips = bool(options.horizontal_flips)
-    C.use_vertical_flips = bool(options.vertical_flips)
-    C.rot_90 = bool(options.rot_90)
+    # C.use_horizontal_flips = bool(options.horizontal_flips)
+    # C.use_vertical_flips = bool(options.vertical_flips)
+    # C.rot_90 = bool(options.rot_90)
 
     C.model_path = options.output_weight_path
     C.num_rois = int(options.num_rois)
