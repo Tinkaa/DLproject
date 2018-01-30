@@ -52,12 +52,15 @@ if __name__ == "__main__":
         plt.plot(num_epochs, loss_rpn_regression, 'b', label="Loss RPN regression")
         plt.plot(num_epochs, loss_detector_classifier, 'c', label="Loss detector classifier")
         plt.plot(num_epochs, loss_detector_regression, 'm', label="Loss detector regression")
-
+        plt.xlabel('Epoch')
+        plt.ylabel('Loss')
         plt.legend(loc=0)
         plt.title(file)
         fig.savefig('./figs/' + file + '.jpg')
 
     plt.figure(4)
     plt.legend(loc=0)
-    plt.title('Accuracies for 3 setups')
+    plt.title('Classifier accuracy from RPN for 3 setups')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
     fig_accuracy.savefig('./figs/accuracy.jpg')
