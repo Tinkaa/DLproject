@@ -47,6 +47,8 @@ if __name__ == "__main__":
         plt.figure(4)
         plt.plot(num_epochs, classifier_accuracy, colors[index], label=name[index])
 
+
+
         fig = plt.figure(index)
         plt.plot(num_epochs, loss_rpn_classifier, 'g', label="Loss RPN classifier")
         plt.plot(num_epochs, loss_rpn_regression, 'b', label="Loss RPN regression")
@@ -58,9 +60,31 @@ if __name__ == "__main__":
         plt.title(file)
         fig.savefig('./figs/' + file + '.jpg')
 
+        plt.figure(5)
+        plt.plot(num_epochs,loss_rpn_classifier, colors[index], label=name[index])
+        plt.figure(6)
+        plt.plot(num_epochs,loss_rpn_regression, colors[index], label=name[index])
+        plt.figure(7)
+        plt.plot(num_epochs,loss_detector_classifier, colors[index], label=name[index])
+        plt.figure(8)
+        plt.plot(num_epochs,loss_detector_regression, colors[index], label=name[index])
+
     plt.figure(4)
     plt.legend(loc=0)
-    plt.title('Classifier accuracy from RPN for 3 setups')
+    #plt.title('Classifier accuracy from RPN for 3 setups')
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
     fig_accuracy.savefig('./figs/accuracy.jpg')
+
+    for x in range(5,9):
+        plt.figure(x)
+        plt.legend(loc=0)
+        plt.xlabel('Epoch')
+        plt.ylabel('Loss')
+
+    #plt.title('Loss RPN classifier')
+
+    plt.figure(5).savefig('./figs/lossrpnclassifier.jpg')
+    plt.figure(6).savefig('./figs/lossrpnregression.jpg')
+    plt.figure(7).savefig('./figs/lossdetectorclassifier.jpg')
+    plt.figure(8).savefig('./figs/lossdetectorregression.jpg')
