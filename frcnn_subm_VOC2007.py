@@ -6,8 +6,6 @@ import sys
 import pickle
 from optparse import OptionParser
 import time
-from frcnn import config
-from keras import backend as K
 from keras.layers import Input
 from keras.models import Model
 from frcnn import roi_helpers
@@ -99,11 +97,9 @@ def get_real_coordinates(ratio, x1, y1, x2, y2):
     return (real_x1, real_y1, real_x2, real_y2)
 
 def get_img_list(kit_path,class_mapping):
-    all_imgs, classes_count, class_mapping=read_data(kit_path, class_mapping)
+    all_imgs, classes_count, class_mapping=read_data(kit_path, class_mapping, dataset=['VOC2007'])
     print(classes_count)
     return all_imgs, classes_count, class_mapping
-
-
 
 
 class_mapping = C.class_mapping
@@ -120,17 +116,10 @@ print(class_mapping)
 class_to_color = {class_mapping[v]: np.random.randint(0, 255, 3) for v in class_mapping}
 C.num_rois = int(options.num_rois)
 
-if C.network == 'resnet50':
-    num_features = 1024
-elif C.network == 'vgg':
-    num_features = 512
+num_features = 512
 
-if K.image_dim_ordering() == 'th':
-    input_shape_img = (3, None, None)
-    input_shape_features = (num_features, None, None)
-else:
-    input_shape_img = (None, None, 3)
-    input_shape_features = (None, None, num_features)
+input_shape_img = (None, None, 3)
+input_shape_features = (None, None, num_features)
 
 img_input = Input(shape=input_shape_img)
 roi_input = Input(shape=(C.num_rois, 4))
