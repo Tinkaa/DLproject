@@ -8,4 +8,4 @@
 module load anaconda3
 source activate /scratch/work/phama1/tensorflow
 
-srun --gres=gpu:1 python frcnn_subm.py -p VOCdevkit/VOC2012/JPEGImages
+srun --gres=gpu:1 python frcnn_subm_VOC2007.py -p VOCdevkit
