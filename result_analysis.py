@@ -8,6 +8,7 @@ from os import path, walk as walk_dir
 from itertools import groupby
 import untangle
 from frcnn.data_generators import iou
+from pathlib import Path
 
 
 def parse_int(num):
@@ -18,6 +19,7 @@ def load_xml_tree(xml_file_path):
     with open(xml_file_path, 'r') as f:
         return untangle.parse(f.read())
 
+
 def build_result_tree(_file_path):
     """
     Build a result tree structure from txt
@@ -25,10 +27,13 @@ def build_result_tree(_file_path):
     tree = {}
     with open(_file_path, 'r') as rs:
         objs = map(lambda l: tuple(l.split()), rs)
-        objs = map(lambda o: { 'name': o[0], 'score': float(o[1]), 'x1': parse_int(o[2]), 'y1': parse_int(o[3]), 'x2': parse_int(o[4]), 'y2': parse_int(o[5]) }, objs)
+        objs = map(lambda o: {'name': o[0], 'score': float(o[1]), 'x1': parse_int(o[2]), 'y1': parse_int(o[3]),
+                              'x2': parse_int(o[4]), 'y2': parse_int(o[5])}, objs)
         for k, g in groupby(objs, lambda k: k['name']):
             tree[k] = list(g)
+
     return tree
+
 
 # result_tree = build_result_tree(file_path)
 
@@ -42,11 +47,15 @@ def find_confusion_matrix(clazz, result_tree, annotation_root, iou_thres, confid
 
     for img_name, stats in result_tree.items():
         annotation_path = path.join(annotation_root, img_name + '.xml')
-        xml = load_xml_tree(annotation_path) # read annotation xml
+        xml_file = Path(annotation_path)
+
+        if not xml_file.exists():
+            continue
+        xml = load_xml_tree(annotation_path)  # read annotation xml
         bbs = xml.annotation.object
         bbs = filter(lambda b: b.name.cdata == clazz, bbs)
 
-        for stat in stats: # compare a detection with all bounding boxes
+        for stat in stats:  # compare a detection with all bounding boxes
             score = stat['score']
             x1 = stat['x1']
             y1 = stat['y1']
@@ -65,11 +74,11 @@ def find_confusion_matrix(clazz, result_tree, annotation_root, iou_thres, confid
                 b = (_x1, _y1, _x2, _y2)
 
                 iou_score = iou(a, b)
-                if iou_score > iou_thres: # If bounding box overlap is enough
+                if iou_score > iou_thres:  # If bounding box overlap is enough
                     overlap_class_match_count += 1
                     if score > confidence_thres:
                         _tp += 1
-                    else: # This almost never happen
+                    else:  # This almost never happen
                         _fn += 1
 
             if overlap_class_match_count == 0:
@@ -79,8 +88,13 @@ def find_confusion_matrix(clazz, result_tree, annotation_root, iou_thres, confid
     for subdirs, dirs, files in walk_dir(annotation_root):
         for annotation_file in files:
             annotation_path = path.join(annotation_root, annotation_file)
+            xml_file = Path(annotation_path)
+
+            if not xml_file.exists():
+                continue
+
             xml = load_xml_tree(annotation_path)
-            img_name = xml.filename.cdata
+            img_name = xml.annotation.filename.cdata
             img_name = img_name[:-4]
             bbs = xml.annotation.object
             bbs = list(filter(lambda b: b.name.cdata == clazz, bbs))
@@ -108,9 +122,9 @@ def find_confusion_matrix(clazz, result_tree, annotation_root, iou_thres, confid
                             overlap_found += 1
                 if overlap_found == 0:
                     _fn += 1
-            elif bbs: # if there is class that we want, this is a FN
+            elif bbs:  # if there is class that we want, this is a FN
                 _fn += 1
-  
+
     return _tp, _fp, _fn
 
 
@@ -125,3 +139,11 @@ def mAP(_result_file_path, clazz, annotation_root, iou_thres=0.75, confidence_th
     recall = tp / (tp + fn)
     return precision, recall
 
+
+if __name__ == "__main__":
+    result_path = 'results/VOC2007/Main/comp3_det_test_dog.txt'
+    clazz = 'dog'
+    annotation_path = 'VOCdevkit/VOC2007/Annotations'
+    precision, recall = mAP(result_path, clazz, annotation_path)
+
+    print('Precision: %.3f, recall: %.3f' % (precision, recall))
