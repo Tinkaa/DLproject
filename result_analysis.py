@@ -110,7 +110,7 @@ def find_confusion_matrix(clazz, result_tree, annotation_root, iou_thres, confid
                     _fn += 1
             elif bbs: # if there is class that we want, this is a FN
                 _fn += 1
-  
+
     return _tp, _fp, _fn
 
 
@@ -124,3 +124,9 @@ def mAP(_result_file_path, clazz, annotation_root, iou_thres=0.75, confidence_th
     precision = tp / (tp + fp)
     recall = tp / (tp + fn)
     return precision, recall
+
+def __main__():
+    classes=['cat','dog','car']
+    for c in classes:
+        print(c)
+        precision,recall=mAP('results/VOC2012/Main/comp3_det_test_'+c+'.txt', c, '/Users/kha/Downloads/VOCdevkit/VOC2007/Annotations')
