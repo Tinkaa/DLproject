@@ -5,3 +5,4 @@ opencv-python~=3.4.0
 scikit-image~=0.13.1
 ipython~=6.2.1
 opencv-python~=3.4.0
+untangle~=1.1.0
