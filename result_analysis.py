@@ -10,13 +10,13 @@ import untangle
 from frcnn.data_generators import iou
 
 
-# result_root = 'results/VOC2012/Main'
-# file_name = 'comp3_det_test_dog.txt'
-# clazz = 'dog'
+def parse_int(num):
+    return int(float(num))
 
-# annotation_root = '/Users/kha/Downloads/VOCdevkit/VOC2007/Annotations'
 
-# file_path = path.join(result_root, file_name)
+def load_xml_tree(xml_file_path):
+    with open(xml_file_path, 'r') as f:
+        return untangle.parse(f.read())
 
 def build_result_tree(_file_path):
     """
@@ -25,7 +25,7 @@ def build_result_tree(_file_path):
     tree = {}
     with open(_file_path, 'r') as rs:
         objs = map(lambda l: tuple(l.split()), rs)
-        objs = map(lambda o: { 'name': o[0], 'score': float(o[1]), 'x1': int(o[2]), 'y1': int(o[3]), 'x2': int(o[4]), 'y2': int(o[5]) }, objs)
+        objs = map(lambda o: { 'name': o[0], 'score': float(o[1]), 'x1': parse_int(o[2]), 'y1': parse_int(o[3]), 'x2': parse_int(o[4]), 'y2': parse_int(o[5]) }, objs)
         for k, g in groupby(objs, lambda k: k['name']):
             tree[k] = list(g)
     return tree
@@ -42,7 +42,7 @@ def find_confusion_matrix(clazz, result_tree, annotation_root, iou_thres, confid
 
     for img_name, stats in result_tree.items():
         annotation_path = path.join(annotation_root, img_name + '.xml')
-        xml = untangle.parse(annotation_path) # read annotation xml
+        xml = load_xml_tree(annotation_path) # read annotation xml
         bbs = xml.annotation.object
         bbs = filter(lambda b: b.name.cdata == clazz, bbs)
 
@@ -56,10 +56,10 @@ def find_confusion_matrix(clazz, result_tree, annotation_root, iou_thres, confid
             overlap_class_match_count = 0
 
             for _bb in bbs:
-                _x1 = int(_bb.bndbox.xmin.cdata)
-                _y1 = int(_bb.bndbox.ymin.cdata)
-                _x2 = int(_bb.bndbox.xmax.cdata)
-                _y2 = int(_bb.bndbox.ymax.cdata)
+                _x1 = parse_int(_bb.bndbox.xmin.cdata)
+                _y1 = parse_int(_bb.bndbox.ymin.cdata)
+                _x2 = parse_int(_bb.bndbox.xmax.cdata)
+                _y2 = parse_int(_bb.bndbox.ymax.cdata)
 
                 a = (x1, y1, x2, y2)
                 b = (_x1, _y1, _x2, _y2)
@@ -79,7 +79,7 @@ def find_confusion_matrix(clazz, result_tree, annotation_root, iou_thres, confid
     for subdirs, dirs, files in walk_dir(annotation_root):
         for annotation_file in files:
             annotation_path = path.join(annotation_root, annotation_file)
-            xml = untangle.parse(annotation_path)
+            xml = load_xml_tree(annotation_path)
             img_name = xml.filename.cdata
             img_name = img_name[:-4]
             bbs = xml.annotation.object
@@ -92,10 +92,10 @@ def find_confusion_matrix(clazz, result_tree, annotation_root, iou_thres, confid
                 # if no overlap can be found, this is a FN
                 overlap_found = 0
                 for _bb in bbs:
-                    _x1 = int(_bb.bndbox.xmin.cdata)
-                    _y1 = int(_bb.bndbox.ymin.cdata)
-                    _x2 = int(_bb.bndbox.xmax.cdata)
-                    _y2 = int(_bb.bndbox.ymax.cdata)
+                    _x1 = parse_int(_bb.bndbox.xmin.cdata)
+                    _y1 = parse_int(_bb.bndbox.ymin.cdata)
+                    _x2 = parse_int(_bb.bndbox.xmax.cdata)
+                    _y2 = parse_int(_bb.bndbox.ymax.cdata)
                     for det in result_tree[img_name]:
                         x1 = det['x1']
                         y1 = det['y1']
@@ -124,3 +124,4 @@ def mAP(_result_file_path, clazz, annotation_root, iou_thres=0.75, confidence_th
     precision = tp / (tp + fp)
     recall = tp / (tp + fn)
     return precision, recall
+
