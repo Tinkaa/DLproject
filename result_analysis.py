@@ -23,9 +23,9 @@ def build_result_tree(_file_path):
     Build a result tree structure from txt
     """
     tree = {}
-    with open(file_path, 'r') as rs:
+    with open(_file_path, 'r') as rs:
         objs = map(lambda l: tuple(l.split()), rs)
-        objs = map(lambda o: { 'name': o[0], 'score': o[1], 'x1': o[2], 'y1': o[3], 'x2': o[4], 'y2': o[5] }, objs)
+        objs = map(lambda o: { 'name': o[0], 'score': float(o[1]), 'x1': int(o[2]), 'y1': int(o[3]), 'x2': int(o[4]), 'y2': int(o[5]) }, objs)
         for k, g in groupby(objs, lambda k: k['name']):
             tree[k] = list(g)
     return tree
