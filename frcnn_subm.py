@@ -6,12 +6,11 @@ import sys
 import pickle
 from optparse import OptionParser
 import time
-from frcnn import config
-from keras import backend as K
 from keras.layers import Input
 from keras.models import Model
 from frcnn import roi_helpers
 from keras import backend as K
+import frcnn.vgg as nn
 
 K.set_learning_phase(0)  # set learning phase, 0=test
 
@@ -37,11 +36,6 @@ config_output_filename = options.config_filename
 
 with open(config_output_filename, 'rb') as f_in:
     C = pickle.load(f_in)
-
-if C.network == 'resnet50':
-    import frcnn.resnet as nn
-elif C.network == 'vgg':
-    import frcnn.vgg as nn
 
 # turn off any data augmentation at test time
 C.use_horizontal_flips = False
@@ -111,17 +105,10 @@ print(class_mapping)
 class_to_color = {class_mapping[v]: np.random.randint(0, 255, 3) for v in class_mapping}
 C.num_rois = int(options.num_rois)
 
-if C.network == 'resnet50':
-    num_features = 1024
-elif C.network == 'vgg':
-    num_features = 512
+num_features = 512
 
-if K.image_dim_ordering() == 'th':
-    input_shape_img = (3, None, None)
-    input_shape_features = (num_features, None, None)
-else:
-    input_shape_img = (None, None, 3)
-    input_shape_features = (None, None, num_features)
+input_shape_img = (None, None, 3)
+input_shape_features = (None, None, num_features)
 
 img_input = Input(shape=input_shape_img)
 roi_input = Input(shape=(C.num_rois, 4))
@@ -167,8 +154,7 @@ for idx, img_name in enumerate(sorted(os.listdir(img_path))):
 
     X, ratio = format_img(img, C)
 
-    if K.image_dim_ordering() == 'tf':
-        X = np.transpose(X, (0, 2, 3, 1))
+    X = np.transpose(X, (0, 2, 3, 1))
 
     # get the feature maps and output from the RPN
     [Y1, Y2, F] = model_rpn.predict(X)
