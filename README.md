@@ -1,5 +1,5 @@
 # DLproject: focal loss for Faster R-CNN
-In this project, we implemented Faster R-CNN and applied the focal loss function on the Region Proposal Network (RPN) to evaluate the performance of Faster R-CNN.
+In this project, we implemented Faster R-CNN and applied the focal loss function on the Region Proposal Network (RPN) to evaluate the performance of Faster R-CNN.  
 Authors: Phu Pham, Kha Nguyen and Tinka Valentijn
 
 ### Usage
